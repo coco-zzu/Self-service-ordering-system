@@ -14,8 +14,11 @@ public class UserService {
     // 保存用户（注册）
     public boolean save(User user) {
         try {
-            int result = userMapper.insertUser(user);
-            return result > 0;
+            if(userMapper.findByUsername(user.getUsername()) == null) {
+                int result = userMapper.insertUser(user);
+                return result > 0;
+            }
+            else return false;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
