@@ -11,7 +11,6 @@ import zzu.group.www.selfserviceorderingsystem.service.UserService;
 
 @RestController
 public class LoginController {
-    public static User user;
 
     private final UserService userService;
 
@@ -23,7 +22,9 @@ public class LoginController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest loginRequest) {
         try {
-            user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+
+            User user = new User(loginRequest.getUsername(), loginRequest.getPassword(), loginRequest.getRole());
+            user =userService.login(user);
             if (user != null) {
                 return new LoginResponse(true, "登录成功", user);
             } else {
@@ -38,7 +39,7 @@ public class LoginController {
     @PostMapping("/sign")
     public SignResponse sign(@RequestBody SignRequest signRequest) {
         try {
-            User user = new User(signRequest.getUsername(), signRequest.getPassword());
+            User user = new User(signRequest.getUsername(), signRequest.getPassword(), signRequest.getRole());
             boolean result = userService.save(user);
             if (result) {
                 return new SignResponse(true, "注册成功", user);
@@ -57,6 +58,7 @@ public class LoginController {
         // Getter和Setter
         private String username;
         private String password;
+        private int role;
     }
     // 登录响应数据类
     @Setter
@@ -79,6 +81,7 @@ public class LoginController {
     public static class SignRequest{
         private String username;
         private String password;
+        private int role;
     }
     @Getter
     @Setter

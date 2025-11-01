@@ -11,9 +11,10 @@ public class User {
     private Integer id;
     private String username;
     private String password;
-
-    public User(String username, String password) {
+    private int role;
+    public User(String username, String password, int role) {
         this.username = username;
         this.password = password;
+        this.role = role;
     }
 }
