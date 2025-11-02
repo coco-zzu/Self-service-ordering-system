@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/Self-service-ordering-system.iml" filepath="$PROJECT_DIR$/.idea/Self-service-ordering-system.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Self-service-ordering-system/selfserviceorderingsystem/selfserviceorderingsystem.iml" filepath="$PROJECT_DIR$/Self-service-ordering-system/selfserviceorderingsystem/selfserviceorderingsystem.iml" />
+    </modules>
+  </component>
+</project>
