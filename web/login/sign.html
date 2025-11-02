@@ -36,6 +36,12 @@
             .btn-hover {
                 @apply hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300;
             }
+            .input-error {
+                @apply border-red-500 focus:ring-red-200 focus:border-red-500;
+            }
+            .error-text {
+                @apply text-red-500 text-xs mt-1 block;
+            }
         }
     </style>
 </head>
@@ -63,6 +69,7 @@
                            class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 input-focus"
                            placeholder="请设置用户名（至少3位）" required>
                 </div>
+                <span id="usernameError" class="error-text hidden">用户名长度不能少于3位</span>
             </div>
 
             <!-- 密码 -->
@@ -79,6 +86,7 @@
                         <i class="fa fa-eye-slash"></i>
                     </button>
                 </div>
+                <span id="passwordError" class="error-text hidden">密码长度不能少于6位</span>
             </div>
 
             <!-- 角色选择 -->
@@ -172,6 +180,60 @@
         }, 3000);
     }
 
+    // 表单验证（前端本地校验）
+    function validateForm(username, password) {
+        let isValid = true;
+        const usernameError = document.getElementById('usernameError');
+        const passwordError = document.getElementById('passwordError');
+
+        // 用户名验证
+        if (username.length < 3) {
+            usernameError.classList.remove('hidden');
+            document.getElementById('username').classList.add('input-error');
+            isValid = false;
+        } else {
+            usernameError.classList.add('hidden');
+            document.getElementById('username').classList.remove('input-error');
+        }
+
+        // 密码验证
+        if (password.length < 6) {
+            passwordError.classList.remove('hidden');
+            document.getElementById('password').classList.add('input-error');
+            isValid = false;
+        } else {
+            passwordError.classList.add('hidden');
+            document.getElementById('password').classList.remove('input-error');
+        }
+
+        return isValid;
+    }
+
+    // 输入框实时校验（失去焦点时）
+    document.getElementById('username').addEventListener('blur', (e) => {
+        const username = e.target.value.trim();
+        const errorEl = document.getElementById('usernameError');
+        if (username.length < 3) {
+            errorEl.classList.remove('hidden');
+            e.target.classList.add('input-error');
+        } else {
+            errorEl.classList.add('hidden');
+            e.target.classList.remove('input-error');
+        }
+    });
+
+    document.getElementById('password').addEventListener('blur', (e) => {
+        const password = e.target.value;
+        const errorEl = document.getElementById('passwordError');
+        if (password.length < 6) {
+            errorEl.classList.remove('hidden');
+            e.target.classList.add('input-error');
+        } else {
+            errorEl.classList.add('hidden');
+            e.target.classList.remove('input-error');
+        }
+    });
+
     // 注册表单提交（对接后端接口）
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -180,16 +242,17 @@
         const password = document.getElementById('password').value;
         const role = parseInt(document.querySelector('input[name="role"]:checked').value);
 
+        // 先做前端本地验证
+        if (!validateForm(username, password)) {
+            return;
+        }
+
         showMessage('正在注册...');
 
         try {
-            // ##############################
-            // 请替换为你的后端实际接口地址
-            // 示例：后端地址是 http://localhost:8080，注册接口是 /api/sign
-            // 则完整地址为：http://localhost:8080/api/sign
-            const baseUrl = 'http://localhost:8080'; // 后端服务域名+端口
-            const registerApi = '/api/sign'; // 注册接口路径（根据后端@PostMapping调整）
-            // ##############################
+            // 对接后端注册接口（与后端 @PostMapping("/web/sign") 对应）
+            const baseUrl = 'http://localhost:8080';
+            const registerApi = '/web/sign';
 
             const response = await axios.post(`${baseUrl}${registerApi}`, {
                 username: username,
@@ -201,18 +264,22 @@
 
             const signResponse = response.data;
             if (signResponse.success) {
-                showMessage('注册成功，请登录');
+                showMessage('注册成功，跳转登录页...');
                 setTimeout(() => window.location.href = 'login.html', 1500);
             } else {
+                // 显示后端返回的具体错误信息（如“用户已存在”）
                 showMessage(signResponse.message || '注册失败', false);
             }
         } catch (error) {
             console.error('注册请求错误详情：', error);
             if (error.response) {
-                showMessage(`注册失败（状态码：${error.response.status}）`, false);
+                // 后端返回错误（如 400/500）
+                showMessage(`注册失败：${error.response.data.message || '服务器异常'}`, false);
             } else if (error.request) {
-                showMessage('后端服务未启动或接口地址错误', false);
+                // 网络错误（后端未启动或地址错误）
+                showMessage('无法连接到服务器，请检查后端是否启动', false);
             } else {
+                // 其他错误
                 showMessage('请求出错：' + error.message, false);
             }
         }

@@ -183,18 +183,14 @@
         showMessage('正在登录...');
 
         try {
-            // ##############################
-            // 请替换为你的后端实际接口地址
-            // 示例：后端地址是 http://localhost:8080，登录接口是 /api/login
-            // 则完整地址为：http://localhost:8080/api/login
-            const baseUrl = 'http://localhost:8080'; // 后端服务域名+端口
-            const loginApi = '/api/login'; // 登录接口路径（根据后端@PostMapping调整）
-            // ##############################
+            // 关键修改：后端地址+接口路径（与后端统一前缀对应）
+            const baseUrl = 'http://localhost:8080'; // 后端端口（默认8080）
+            const loginApi = '/web/login'; // 与后端 @PostMapping("/login") + 类前缀 /web 对应
 
             const response = await axios.post(`${baseUrl}${loginApi}`, {
-                username: username,
-                password: password,
-                role: role
+                username: username, // 与后端 LoginRequest 的 username 字段一致
+                password: password, // 与后端 LoginRequest 的 password 字段一致
+                role: role // 与后端 LoginRequest 的 role 字段一致（int类型）
             }, {
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -203,16 +199,18 @@
             if (loginResponse.success) {
                 localStorage.setItem('currentUser', JSON.stringify(loginResponse.user));
                 showMessage('登录成功，正在跳转...');
-                setTimeout(() => window.location.href = 'success.html', 1500);
+                // 跳转页面：根据角色区分（客户→点餐页，商家→管理页）
+                const targetUrl = role === 0 ? 'customer-order.html' : 'merchant-manage.html';
+                setTimeout(() => window.location.href = targetUrl, 1500);
             } else {
                 showMessage(loginResponse.message || '登录失败', false);
             }
         } catch (error) {
             console.error('登录请求错误详情：', error);
             if (error.response) {
-                showMessage(`登录失败（状态码：${error.response.status}）`, false);
+                showMessage(`登录失败（${error.response.data.message}）`, false);
             } else if (error.request) {
-                showMessage('后端服务未启动或接口地址错误', false);
+                showMessage('后端服务未启动或地址错误', false);
             } else {
                 showMessage('请求出错：' + error.message, false);
             }

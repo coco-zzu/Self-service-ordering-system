@@ -19,7 +19,7 @@ public class LoginController {
     }
 
     // 处理登录请求
-    @PostMapping("/login")
+    @PostMapping("/web/login")
     public LoginResponse login(@RequestBody LoginRequest loginRequest) {
         try {
 
@@ -36,7 +36,7 @@ public class LoginController {
         }
     }
 
-    @PostMapping("/sign")
+    @PostMapping("/web/sign")
     public SignResponse sign(@RequestBody SignRequest signRequest) {
         try {
             User user = new User(signRequest.getUsername(), signRequest.getPassword(), signRequest.getRole());
