@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奶茶店自助点餐系统 - 登录</title>
+    <!-- 外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        neutral: '#F7FFF7',
+                        dark: '#292F36'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none;
+            }
+            .btn-hover {
+                @apply hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-neutral to-gray-100 min-h-screen flex items-center justify-center p-4">
+<div class="w-full max-w-md">
+    <!-- 登录卡片 -->
+    <div class="bg-white rounded-2xl p-8 card-shadow">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-dark mb-2">
+                <i class="fa fa-coffee text-primary mr-2"></i>奶茶店系统
+            </h1>
+            <p class="text-gray-500">请登录您的账号</p>
+        </div>
+
+        <!-- 登录表单 -->
+        <form id="loginForm" class="space-y-6">
+            <!-- 用户名 -->
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa fa-user"></i>
+                        </span>
+                    <input type="text" id="username"
+                           class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 input-focus"
+                           placeholder="请输入用户名" required>
+                </div>
+            </div>
+
+            <!-- 密码 -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa fa-lock"></i>
+                        </span>
+                    <input type="password" id="password"
+                           class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 input-focus"
+                           placeholder="请输入密码" required>
+                    <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-primary">
+                        <i class="fa fa-eye-slash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 角色选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">用户类型</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="role" value="0" class="sr-only peer" checked>
+                        <span class="text-center">
+                                <i class="fa fa-user-circle text-2xl block mb-1 text-primary"></i>
+                                <span>客户</span>
+                            </span>
+                        <span class="absolute inset-0 border-2 border-primary rounded-lg opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+                    </label>
+
+                    <label class="relative flex items-center justify-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="role" value="1" class="sr-only peer">
+                        <span class="text-center">
+                                <i class="fa fa-briefcase text-2xl block mb-1 text-gray-400"></i>
+                                <span>商家</span>
+                            </span>
+                        <span class="absolute inset-0 border-2 border-primary rounded-lg opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 登录按钮 -->
+            <button type="submit" class="w-full bg-primary text-white font-medium py-3 px-4 rounded-lg btn-hover">
+                登录 <i class="fa fa-arrow-right ml-1"></i>
+            </button>
+
+            <!-- 注册链接 -->
+            <div class="text-center text-gray-600">
+                <span>还没有账号？</span>
+                <a href="sign.html" class="text-primary font-medium hover:underline ml-1">立即注册</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 消息提示框 -->
+    <div id="messageToast" class="fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg flex items-center opacity-0 transition-opacity duration-300 pointer-events-none">
+        <i id="messageIcon" class="fa fa-check-circle mr-2"></i>
+        <span id="messageText"></span>
+    </div>
+</div>
+
+<script>
+    // 密码显示/隐藏切换
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    togglePassword.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        togglePassword.innerHTML = type === 'password' ?
+            '<i class="fa fa-eye-slash"></i>' :
+            '<i class="fa fa-eye"></i>';
+    });
+
+    // 角色选择样式切换
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    roleRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            roleRadios.forEach(r => {
+                const icon = r.parentElement.querySelector('i');
+                if (r.checked) {
+                    icon.classList.remove('text-gray-400');
+                    icon.classList.add('text-primary');
+                } else {
+                    icon.classList.remove('text-primary');
+                    icon.classList.add('text-gray-400');
+                }
+            });
+        });
+    });
+
+    // 显示消息提示
+    function showMessage(text, isSuccess = true) {
+        const toast = document.getElementById('messageToast');
+        const icon = document.getElementById('messageIcon');
+        const textEl = document.getElementById('messageText');
+
+        textEl.textContent = text;
+        icon.className = isSuccess ? 'fa fa-check-circle mr-2' : 'fa fa-exclamation-circle mr-2';
+        toast.className = `fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg flex items-center opacity-100 transition-opacity duration-300 ${
+            isSuccess ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+        }`;
+
+        setTimeout(() => {
+            toast.classList.replace('opacity-100', 'opacity-0');
+        }, 3000);
+    }
+
+    // 登录表单提交（对接后端接口）
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const role = parseInt(document.querySelector('input[name="role"]:checked').value);
+
+        showMessage('正在登录...');
+
+        try {
+            // 关键修改：后端地址+接口路径（与后端统一前缀对应）
+            const baseUrl = 'http://localhost:8080'; // 后端端口（默认8080）
+            const loginApi = '/api/web/login'; // 与后端 @PostMapping("/web/login") + 类前缀 /api 对应
+
+            const response = await axios.post(`${baseUrl}${loginApi}`, {
+                username: username, // 与后端 LoginRequest 的 username 字段一致
+                password: password, // 与后端 LoginRequest 的 password 字段一致
+                role: role // 与后端 LoginRequest 的 role 字段一致（int类型）
+            }, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const loginResponse = response.data;
+            if (loginResponse.success) {
+                localStorage.setItem('currentUser', JSON.stringify(loginResponse.user));
+                showMessage('登录成功，正在跳转...');
+                // 跳转页面：根据角色区分（客户→点餐页，商家→管理页）
+                const targetUrl = role === 0 ? 'customer-order.html' : 'merchant-manage.html';
+                setTimeout(() => window.location.href = targetUrl, 1500);
+            } else {
+                showMessage(loginResponse.message || '登录失败', false);
+            }
+        } catch (error) {
+            console.error('登录请求错误详情：', error);
+            if (error.response) {
+                showMessage(`登录失败（${error.response.data.message}）`, false);
+            } else if (error.request) {
+                showMessage('后端服务未启动或地址错误', false);
+            } else {
+                showMessage('请求出错：' + error.message, false);
+            }
+        }
+    });
+</script>
+</body>
+</html>

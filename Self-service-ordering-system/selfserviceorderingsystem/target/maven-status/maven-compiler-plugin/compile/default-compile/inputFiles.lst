@@ -1,0 +1,15 @@
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\config\CorsConfig.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\controller\LoginController.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\controller\MerchantController.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\controller\WebController.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\javabean\Order.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\javabean\OrderItem.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\javabean\Product.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\javabean\User.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\mapper\OrderMapper.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\mapper\ProductMapper.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\mapper\UserMapper.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\SelfserviceorderingsystemApplication.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\service\OrderService.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\service\ProductService.java
+C:\Users\asus\IdeaProjects\Self-service-ordering-system\Self-service-ordering-system\selfserviceorderingsystem\src\main\java\zzu\group\www\selfserviceorderingsystem\service\UserService.java

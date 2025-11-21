@@ -12,6 +12,8 @@ public class User {
     private String username;
     private String password;
     private int role;
+    private int points = 0; // 积分属性，默认为0
+    
     public User(String username, String password, int role) {
         this.username = username;
         this.password = password;

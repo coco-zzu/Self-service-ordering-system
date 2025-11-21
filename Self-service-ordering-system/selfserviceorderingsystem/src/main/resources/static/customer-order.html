@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奶茶店自助点餐系统 - 客户点餐</title>
+    <!-- 外部资源 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+        .product-card {
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .cart-item {
+            border-bottom: 1px solid #eee;
+        }
+        #qrcode {
+            width: 200px;
+            height: 200px;
+            margin: 15px auto;
+        }
+        /* 新增积分显示样式 */
+        .points-display {
+            background-color: #e9f7ef;
+            border: 1px solid #27ae60;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="fa fa-coffee me-2"></i>奶茶店自助点餐系统
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <span class="navbar-text me-3">欢迎，客户</span>
+                    <span class="navbar-text me-3" id="user-points">积分: 0</span>
+                    <button class="btn btn-outline-light me-2" onclick="showProducts()">
+                        <i class="fa fa-coffee"></i> 商品列表
+                    </button>
+                    <button class="btn btn-outline-light me-2" onclick="showOrders()">
+                        <i class="fa fa-list"></i> 我的订单
+                    </button>
+                    <button class="btn btn-outline-light" onclick="showCart()">
+                        <i class="fa fa-shopping-cart"></i> 购物车 
+                        <span id="cart-count" class="badge bg-light text-dark">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="row mt-4">
+            <!-- 主内容区域 -->
+            <div class="col-md-12">
+                <!-- 商品展示区域 -->
+                <div id="product-section">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h3><i class="fa fa-coffee me-2"></i>商品列表</h3>
+                        <div class="d-flex">
+                            <input type="text" id="search-name" class="form-control me-2" placeholder="按名称搜索">
+                            <select id="search-price" class="form-control me-2">
+                                <option value="">按价格筛选</option>
+                                <option value="0-10">0-10元</option>
+                                <option value="10-20">10-20元</option>
+                                <option value="20-100">20元以上</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="searchProducts()">
+                                <i class="fa fa-search"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="product-list" class="row">
+                        <!-- 商品将通过JS动态加载 -->
+                    </div>
+                </div>
+
+                <!-- 购物车区域 -->
+                <div id="cart-section" style="display: none;">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h3><i class="fa fa-shopping-cart me-2"></i>购物车</h3>
+                        <div>
+                            <button class="btn btn-secondary me-2" onclick="showProducts()">
+                                <i class="fa fa-arrow-left"></i> 返回商品列表
+                            </button>
+                            <button class="btn btn-success" onclick="checkout()">去支付</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 积分显示区域 -->
+                    <div class="points-display" id="points-info" style="display: none;">
+                        <div class="d-flex justify-content-between">
+                            <span>我的积分: <strong id="available-points">0</strong></span>
+                            <span>本次可获得积分: <strong id="earnable-points">0</strong></span>
+                        </div>
+                        <div class="mt-2">
+                            <label for="use-points">使用积分抵扣 (1积分=1元):</label>
+                            <div class="input-group" style="width: 200px;">
+                                <input type="number" id="use-points" class="form-control" min="0" value="0">
+                                <button class="btn btn-outline-primary" type="button" onclick="applyPoints()">应用</button>
+                            </div>
+                            <div class="form-text">最多可使用 <span id="max-points">0</span> 积分</div>
+                        </div>
+                    </div>
+
+                    <div id="cart-items">
+                        <!-- 购物车项目将通过JS动态加载 -->
+                    </div>
+
+                    <div class="mt-3 p-3 bg-light">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <div>总计: <strong id="cart-total">¥0.00</strong></div>
+                                <div id="points-discount" style="display: none;">积分抵扣: -<strong id="discount-amount">¥0.00</strong></div>
+                                <div id="final-amount">实付金额: <strong id="final-total">¥0.00</strong></div>
+                            </div>
+                            <div>
+                                <button class="btn btn-success" onclick="checkout()">去支付</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 订单区域 -->
+                <div id="order-section" style="display: none;">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h3><i class="fa fa-list me-2"></i>我的订单</h3>
+                        <button class="btn btn-secondary" onclick="showProducts()">
+                            <i class="fa fa-arrow-left"></i> 返回商品列表
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>订单号</th>
+                                    <th>总金额</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-table-body">
+                                <!-- 订单将通过JS动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 支付区域 -->
+                <div id="payment-section" style="display: none;">
+                    <div class="card mx-auto" style="max-width: 500px;">
+                        <div class="card-header">
+                            <h4 class="card-title"><i class="fa fa-credit-card me-2"></i>支付订单</h4>
+                        </div>
+                        <div class="card-body text-center">
+                            <p>订单号: <strong id="payment-order-id"></strong></p>
+                            <p>支付金额: <strong id="payment-amount"></strong></p>
+                            <div id="qrcode"></div>
+                            <p class="text-muted">请使用手机扫描二维码完成支付</p>
+                            <button class="btn btn-secondary me-2" onclick="showCart()">
+                                <i class="fa fa-arrow-left"></i> 返回购物车
+                            </button>
+                            <button class="btn btn-success" onclick="checkPaymentStatus()">支付完成</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 商品详情模态框 -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="product-modal-title"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="product-modal-id">
+                    <div class="mb-3">
+                        <label class="form-label">数量</label>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" onclick="decreaseQuantity()">-</button>
+                            <input type="number" id="product-quantity" class="form-control text-center" value="1" min="1">
+                            <button class="btn btn-outline-secondary" type="button" onclick="increaseQuantity()">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="addToCart()">加入购物车</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 购物车数据
+        let cart = [];
+        let currentUserPoints = 0;
+        let appliedPoints = 0;
+        let originalTotal = 0;
+        let finalTotal = 0;
+        // Store user credentials for points retrieval
+        let currentUser = {
+            username: '',
+            password: ''
+        };
+        
+        // 页面加载完成后获取商品数据和用户信息
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            loadUserInfo();
+        });
+
+        // 显示商品列表
+        function showProducts() {
+            document.getElementById('product-section').style.display = 'block';
+            document.getElementById('cart-section').style.display = 'none';
+            document.getElementById('order-section').style.display = 'none';
+            document.getElementById('payment-section').style.display = 'none';
+            loadProducts();
+        }
+
+        // 显示购物车
+        function showCart() {
+            document.getElementById('product-section').style.display = 'none';
+            document.getElementById('cart-section').style.display = 'block';
+            document.getElementById('order-section').style.display = 'none';
+            document.getElementById('payment-section').style.display = 'none';
+            renderCart();
+        }
+
+        // 显示订单
+        function showOrders() {
+            document.getElementById('product-section').style.display = 'none';
+            document.getElementById('cart-section').style.display = 'none';
+            document.getElementById('order-section').style.display = 'block';
+            document.getElementById('payment-section').style.display = 'none';
+            loadOrders();
+        }
+
+        // 加载用户信息（包括积分）
+        function loadUserInfo() {
+            // Get user info from localStorage
+            const userStr = localStorage.getItem('currentUser');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    currentUser.username = user.username;
+                    currentUser.password = user.password; // Note: In a real app, you shouldn't store password in localStorage
+                    
+                    // Fetch user info with points from backend
+                    fetch(`/api/customer/user?username=${encodeURIComponent(currentUser.username)}&password=${encodeURIComponent(currentUser.password)}`)
+                        .then(response => response.json())
+                        .then(response => {
+                            if (response.success) {
+                                currentUserPoints = response.data.points || 0;
+                                document.getElementById('user-points').textContent = '积分: ' + currentUserPoints;
+                                document.getElementById('available-points').textContent = currentUserPoints;
+                            } else {
+                                // Fallback to default values
+                                currentUserPoints = 0;
+                                document.getElementById('user-points').textContent = '积分: ' + currentUserPoints;
+                                document.getElementById('available-points').textContent = currentUserPoints;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading user info:', error);
+                            // Fallback to default values
+                            currentUserPoints = 0;
+                            document.getElementById('user-points').textContent = '积分: ' + currentUserPoints;
+                            document.getElementById('available-points').textContent = currentUserPoints;
+                        });
+                } catch (e) {
+                    console.error('Error parsing user info:', e);
+                    // Fallback to default values
+                    currentUserPoints = 0;
+                    document.getElementById('user-points').textContent = '积分: ' + currentUserPoints;
+                    document.getElementById('available-points').textContent = currentUserPoints;
+                }
+            } else {
+                // Fallback to default values
+                currentUserPoints = 0;
+                document.getElementById('user-points').textContent = '积分: ' + currentUserPoints;
+                document.getElementById('available-points').textContent = currentUserPoints;
+            }
+        }
+
+        // 登录函数（需要添加到适当位置）
+        function login(username, password) {
+            currentUser.username = username;
+            currentUser.password = password;
+            loadUserInfo(); // Load with default values for now
+        }
+
+        // 应用积分抵扣
+        function applyPoints() {
+            const pointsInput = document.getElementById('use-points');
+            let pointsToUse = parseInt(pointsInput.value) || 0;
+            
+            // 确保使用的积分不超过用户拥有的积分和总金额
+            pointsToUse = Math.min(pointsToUse, currentUserPoints, Math.floor(originalTotal));
+            
+            appliedPoints = pointsToUse;
+            pointsInput.value = appliedPoints;
+            
+            // 更新显示
+            updateCartTotals();
+        }
+
+        // 更新购物车总额显示
+        function updateCartTotals() {
+            // 计算原始总额
+            originalTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            
+            // 计算积分抵扣金额
+            const discountAmount = appliedPoints;
+            
+            // 计算最终金额
+            finalTotal = Math.max(0, originalTotal - discountAmount);
+            
+            // 计算可获得的积分
+            const earnablePoints = Math.floor(finalTotal / 10);
+            
+            // 更新UI显示
+            document.getElementById('cart-total').textContent = '¥' + originalTotal.toFixed(2);
+            document.getElementById('earnable-points').textContent = earnablePoints;
+            document.getElementById('max-points').textContent = Math.min(currentUserPoints, Math.floor(originalTotal));
+            
+            if (appliedPoints > 0) {
+                document.getElementById('points-discount').style.display = 'block';
+                document.getElementById('discount-amount').textContent = '¥' + discountAmount.toFixed(2);
+            } else {
+                document.getElementById('points-discount').style.display = 'none';
+            }
+            
+            document.getElementById('final-total').textContent = '¥' + finalTotal.toFixed(2);
+            
+            // 更新积分信息显示
+            document.getElementById('points-info').style.display = 'block';
+        }
+
+        // 加载商品数据
+        function loadProducts() {
+            fetch('/api/merchant/products')
+                .then(response => response.json())
+                .then(response => {
+                    if (!response.success) {
+                        console.error('Error loading products:', response.message);
+                        alert('加载商品失败: ' + (response.message || '未知错误'));
+                        return;
+                    }
+                    
+                    const products = response.data.filter(product => product.status === 1); // 只显示上架商品
+                    renderProducts(products);
+                })
+                .catch(error => {
+                    console.error('Error loading products:', error);
+                    alert('加载商品时发生错误: ' + error.message);
+                });
+        }
+
+        // 渲染商品列表
+        function renderProducts(products) {
+            const container = document.getElementById('product-list');
+            container.innerHTML = '';
+
+            if (products.length === 0) {
+                container.innerHTML = '<div class="col-12"><p class="text-center text-muted">暂无商品</p></div>';
+                return;
+            }
+
+            products.forEach(product => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 mb-4';
+                col.innerHTML = `
+                    <div class="card product-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${product.name}</h5>
+                            <p class="card-text text-muted">${product.description || '暂无描述'}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-success fw-bold">¥${product.price.toFixed(2)}</span>
+                                <button class="btn btn-sm btn-primary" onclick="openProductModal(${product.id}, '${product.name}', ${product.price})">
+                                    <i class="fa fa-plus"></i> 添加
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        // 搜索商品
+        function searchProducts() {
+            const name = document.getElementById('search-name').value.toLowerCase();
+            const priceRange = document.getElementById('search-price').value;
+            
+            fetch('/api/merchant/products')
+                .then(response => response.json())
+                .then(response => {
+                    if (!response.success) {
+                        console.error('Error loading products:', response.message);
+                        alert('加载商品失败: ' + (response.message || '未知错误'));
+                        return;
+                    }
+                    
+                    let products = response.data.filter(product => product.status === 1); // 只显示上架商品
+                    
+                    // 按名称过滤
+                    if (name) {
+                        products = products.filter(product => 
+                            product.name.toLowerCase().includes(name)
+                        );
+                    }
+                    
+                    // 按价格范围过滤
+                    if (priceRange) {
+                        const [min, max] = priceRange.split('-').map(Number);
+                        if (max) {
+                            products = products.filter(product => 
+                                product.price >= min && product.price <= max
+                            );
+                        } else {
+                            products = products.filter(product => 
+                                product.price >= min
+                            );
+                        }
+                    }
+                    
+                    renderProducts(products);
+                })
+                .catch(error => {
+                    console.error('Error searching products:', error);
+                    alert('搜索商品时发生错误: ' + error.message);
+                });
+        }
+
+        // 打开商品模态框
+        function openProductModal(id, name, price) {
+            document.getElementById('product-modal-id').value = id;
+            document.getElementById('product-modal-title').textContent = name;
+            document.getElementById('product-quantity').value = 1;
+            
+            const modal = new bootstrap.Modal(document.getElementById('productModal'));
+            modal.show();
+        }
+
+        // 增加数量
+        function increaseQuantity() {
+            const input = document.getElementById('product-quantity');
+            input.value = parseInt(input.value) + 1;
+        }
+
+        // 减少数量
+        function decreaseQuantity() {
+            const input = document.getElementById('product-quantity');
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        }
+
+        // 添加到购物车
+        function addToCart() {
+            const productId = document.getElementById('product-modal-id').value;
+            const productName = document.getElementById('product-modal-title').textContent;
+            const quantity = parseInt(document.getElementById('product-quantity').value);
+            
+            // 获取商品价格（需要重新获取，因为模态框中没有保存价格）
+            fetch(`/api/merchant/products/${productId}`)
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        const product = response.data;
+                        const price = product.price;
+                        
+                        // 检查购物车中是否已存在该商品
+                        const existingItem = cart.find(item => item.id === parseInt(productId));
+                        if (existingItem) {
+                            existingItem.quantity += quantity;
+                        } else {
+                            cart.push({
+                                id: parseInt(productId),
+                                name: productName,
+                                price: price,
+                                quantity: quantity
+                            });
+                        }
+                        
+                        updateCartCount();
+                        bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+                    } else {
+                        alert('获取商品信息失败: ' + (response.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching product:', error);
+                    alert('获取商品信息时发生错误: ' + error.message);
+                });
+        }
+
+        // 更新购物车数量显示
+        function updateCartCount() {
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cart-count').textContent = count;
+        }
+
+        // 渲染购物车
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">购物车为空</p>';
+                resetCartTotals();
+                return;
+            }
+
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const div = document.createElement('div');
+                div.className = 'cart-item py-3';
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>${item.name}</h6>
+                            <small class="text-muted">单价: ¥${item.price.toFixed(2)}</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateCartItemQuantity(${item.id}, -1)">-</button>
+                                <input type="text" class="form-control text-center" value="${item.quantity}" readonly>
+                                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateCartItemQuantity(${item.id}, 1)">+</button>
+                            </div>
+                            <div class="mx-3">
+                                <strong>¥${itemTotal.toFixed(2)}</strong>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm" onclick="removeFromCart(${item.id})">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            originalTotal = total;
+            updateCartTotals();
+        }
+
+        // 重置购物车总额显示
+        function resetCartTotals() {
+            document.getElementById('cart-total').textContent = '¥0.00';
+            document.getElementById('final-total').textContent = '¥0.00';
+            document.getElementById('points-discount').style.display = 'none';
+            document.getElementById('points-info').style.display = 'none';
+            appliedPoints = 0;
+            document.getElementById('use-points').value = 0;
+        }
+
+        // 更新购物车项目数量
+        function updateCartItemQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(item => item.id !== productId);
+                }
+                updateCartCount();
+                renderCart();
+            }
+        }
+
+        // 从购物车移除
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartCount();
+            renderCart();
+        }
+
+        // 结账
+        function checkout() {
+            if (cart.length === 0) {
+                alert('购物车为空，请先添加商品');
+                return;
+            }
+            
+            // 获取当前用户ID
+            let currentUserId = 1; // 默认值
+            const userStr = localStorage.getItem('currentUser');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    // 在实际应用中，您应该有一个API端点根据用户名/密码获取用户ID和积分
+                    // 这里我们假设用户名是唯一的，可以通过API查询用户详细信息
+                    fetch(`/api/customer/user?username=${encodeURIComponent(user.username)}&password=${encodeURIComponent(user.password)}`)
+                        .then(response => response.json())
+                        .then(userInfoResponse => {
+                            if (userInfoResponse.success && userInfoResponse.data) {
+                                currentUserId = userInfoResponse.data.id;
+                                
+                                // 继续执行结账流程
+                                continueCheckout(currentUserId);
+                            } else {
+                                // 如果无法获取用户ID，则使用默认值
+                                continueCheckout(currentUserId);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('获取用户信息出错:', error);
+                            // 如果出现错误，使用默认值继续
+                            continueCheckout(currentUserId);
+                        });
+                } catch (e) {
+                    console.error('解析用户信息出错:', e);
+                    continueCheckout(currentUserId);
+                }
+            } else {
+                continueCheckout(currentUserId);
+            }
+        }
+        
+        // 继续结账流程
+        function continueCheckout(userId) {
+            // 计算总金额
+            const totalAmount = finalTotal; // 使用折扣后的金额
+            
+            // 创建订单数据
+            const orderData = {
+                userId: userId,
+                totalAmount: totalAmount,
+                status: 0, // 未支付
+                items: cart.map(item => ({
+                    productId: item.id,
+                    productName: item.name, // 添加商品名称
+                    quantity: item.quantity,
+                    price: item.price
+                }))
+            };
+            
+            console.log('发送订单数据:', orderData); // 调试信息
+            
+            // If points were used, deduct them from user's account first
+            if (appliedPoints > 0) {
+                fetch('/api/customer/user/deduct-points', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        points: appliedPoints
+                    })
+                })
+                .then(response => response.json())
+                .then(deductResponse => {
+                    if (!deductResponse.success) {
+                        alert('积分扣除失败: ' + (deductResponse.message || '未知错误'));
+                        return;
+                    }
+                    
+                    // Points deducted successfully, now create the order
+                    createOrder(orderData);
+                })
+                .catch(error => {
+                    console.error('Error deducting points:', error);
+                    alert('扣除积分时发生错误: ' + error.message);
+                });
+            } else {
+                // No points used, create the order directly
+                createOrder(orderData);
+            }
+        }
+        
+        // Create order function
+        function createOrder(orderData) {
+            fetch('/api/customer/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => {
+                console.log('响应状态:', response.status); // 调试信息
+                return response.json();
+            })
+            .then(response => {
+                console.log('响应数据:', response); // 调试信息
+                if (response.success) {
+                    const order = response.data;
+                    showPayment(order.id, order.totalAmount);
+                    cart = []; // 清空购物车
+                    updateCartCount();
+                    resetCartTotals();
+                    // Reload user info to reflect point deduction
+                    loadUserInfo();
+                } else {
+                    alert('创建订单失败: ' + (response.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('Error creating order:', error);
+                alert('创建订单时发生错误: ' + error.message);
+            });
+        }
+
+        // 显示支付界面
+        function showPayment(orderId, amount) {
+            document.getElementById('product-section').style.display = 'none';
+            document.getElementById('cart-section').style.display = 'none';
+            document.getElementById('order-section').style.display = 'none';
+            document.getElementById('payment-section').style.display = 'block';
+            
+            document.getElementById('payment-order-id').textContent = orderId;
+            document.getElementById('payment-amount').textContent = `¥${amount.toFixed(2)}`;
+            
+            // 生成二维码
+            const paymentInfo = `订单号:${orderId},金额:¥${amount.toFixed(2)},积分抵扣:${appliedPoints}`;
+            QRCode.toCanvas(document.getElementById('qrcode'), paymentInfo, {
+                width: 200,
+                height: 200
+            }, function (error) {
+                if (error) console.error(error);
+            });
+        }
+
+        // 检查支付状态
+        function checkPaymentStatus() {
+            const orderId = document.getElementById('payment-order-id').textContent;
+            
+            // 模拟支付成功，更新订单状态
+            fetch(`/api/customer/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 1 }) // 已支付
+            })
+            .then(response => response.json())
+            .then(response => {
+                if (response.success) {
+                    // 支付成功后更新用户积分
+                    // Reload user info to get updated points
+                    loadUserInfo();
+                    alert('支付成功！'); // 实际应用中应更新用户积分
+                    showOrders(); // 显示订单列表
+                } else {
+                    alert('更新支付状态失败: ' + (response.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('Error updating payment status:', error);
+                alert('更新支付状态时发生错误: ' + error.message);
+            });
+        }
+
+        // 加载订单数据
+        function loadOrders() {
+            fetch('/api/customer/orders')
+                .then(response => response.json())
+                .then(response => {
+                    if (!response.success) {
+                        console.error('Error loading orders:', response.message);
+                        alert('加载订单失败: ' + (response.message || '未知错误'));
+                        return;
+                    }
+                    
+                    const orders = response.data;
+                    renderOrders(orders);
+                })
+                .catch(error => {
+                    console.error('Error loading orders:', error);
+                    alert('加载订单时发生错误: ' + error.message);
+                });
+        }
+
+        // 渲染订单列表
+        function renderOrders(orders) {
+            const tbody = document.getElementById('order-table-body');
+            tbody.innerHTML = '';
+
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">暂无订单</td></tr>';
+                return;
+            }
+
+            orders.forEach(order => {
+                let statusText = '';
+                let statusClass = '';
+                let actionButtons = '';
+
+                switch(order.status) {
+                    case 0:
+                        statusText = '未支付';
+                        statusClass = 'bg-warning';
+                        actionButtons = `
+                            <button class="btn btn-sm btn-success me-1" onclick="payOrder(${order.id}, ${order.totalAmount})">去支付</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteOrder(${order.id})">删除</button>
+                        `;
+                        break;
+                    case 1:
+                        statusText = '已支付';
+                        statusClass = 'bg-info';
+                        actionButtons = `
+                            <button class="btn btn-sm btn-primary me-1" onclick="completeOrder(${order.id})">完成订单</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteOrder(${order.id})">删除</button>
+                        `;
+                        break;
+                    case 2:
+                        statusText = '已完成';
+                        statusClass = 'bg-success';
+                        actionButtons = `<button class="btn btn-sm btn-danger" onclick="deleteOrder(${order.id})">删除</button>`;
+                        break;
+                }
+
+                const row = `
+                    <tr>
+                        <td>${order.id}</td>
+                        <td>¥${parseFloat(order.totalAmount).toFixed(2)}</td>
+                        <td><span class="badge ${statusClass}">${statusText}</span></td>
+                        <td>${new Date(order.createTime).toLocaleString()}</td>
+                        <td>${actionButtons}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // 删除订单
+        function deleteOrder(orderId) {
+            if (confirm('确定要删除这个订单吗？')) {
+                fetch(`/api/customer/orders/${orderId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        alert('订单删除成功');
+                        loadOrders(); // 重新加载订单
+                    } else {
+                        alert('删除订单失败: ' + (response.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting order:', error);
+                    alert('删除订单时发生错误: ' + error.message);
+                });
+            }
+        }
+
+        // 支付订单
+        function payOrder(orderId, amount) {
+            showPayment(orderId, amount);
+        }
+
+        // 完成订单
+        function completeOrder(orderId) {
+            fetch(`/api/customer/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 2 }) // 已完成
+            })
+            .then(response => response.json())
+            .then(response => {
+                if (response.success) {
+                    loadOrders(); // 重新加载订单
+                } else {
+                    alert('更新订单状态失败: ' + (response.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                console.error('Error completing order:', error);
+                alert('完成订单时发生错误: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

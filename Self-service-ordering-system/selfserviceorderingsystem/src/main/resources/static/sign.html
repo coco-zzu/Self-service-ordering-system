@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奶茶店自助点餐系统 - 注册</title>
+    <!-- 外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        neutral: '#F7FFF7',
+                        dark: '#292F36'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none;
+            }
+            .btn-hover {
+                @apply hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300;
+            }
+            .input-error {
+                @apply border-red-500 focus:ring-red-200 focus:border-red-500;
+            }
+            .error-text {
+                @apply text-red-500 text-xs mt-1 block;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-neutral to-gray-100 min-h-screen flex items-center justify-center p-4">
+<div class="w-full max-w-md">
+    <!-- 注册卡片 -->
+    <div class="bg-white rounded-2xl p-8 card-shadow">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-dark mb-2">
+                <i class="fa fa-coffee text-primary mr-2"></i>奶茶店系统
+            </h1>
+            <p class="text-gray-500">创建您的账号</p>
+        </div>
+
+        <!-- 注册表单 -->
+        <form id="registerForm" class="space-y-6">
+            <!-- 用户名 -->
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa fa-user"></i>
+                        </span>
+                    <input type="text" id="username"
+                           class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 input-focus"
+                           placeholder="请设置用户名（至少3位）" required>
+                </div>
+                <span id="usernameError" class="error-text hidden">用户名长度不能少于3位</span>
+            </div>
+
+            <!-- 密码 -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa fa-lock"></i>
+                        </span>
+                    <input type="password" id="password"
+                           class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 input-focus"
+                           placeholder="请设置密码（至少6位）" required>
+                    <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-primary">
+                        <i class="fa fa-eye-slash"></i>
+                    </button>
+                </div>
+                <span id="passwordError" class="error-text hidden">密码长度不能少于6位</span>
+            </div>
+
+            <!-- 角色选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">用户类型</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="role" value="0" class="sr-only peer" checked>
+                        <span class="text-center">
+                                <i class="fa fa-user-circle text-2xl block mb-1 text-primary"></i>
+                                <span>客户</span>
+                            </span>
+                        <span class="absolute inset-0 border-2 border-primary rounded-lg opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+                    </label>
+
+                    <label class="relative flex items-center justify-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="role" value="1" class="sr-only peer">
+                        <span class="text-center">
+                                <i class="fa fa-briefcase text-2xl block mb-1 text-gray-400"></i>
+                                <span>商家</span>
+                            </span>
+                        <span class="absolute inset-0 border-2 border-primary rounded-lg opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 注册按钮 -->
+            <button type="submit" class="w-full bg-primary text-white font-medium py-3 px-4 rounded-lg btn-hover">
+                注册 <i class="fa fa-user-plus ml-1"></i>
+            </button>
+
+            <!-- 登录链接 -->
+            <div class="text-center text-gray-600">
+                <span>已有账号？</span>
+                <a href="login.html" class="text-primary font-medium hover:underline ml-1">立即登录</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 消息提示框 -->
+    <div id="messageToast" class="fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg flex items-center opacity-0 transition-opacity duration-300 pointer-events-none">
+        <i id="messageIcon" class="fa fa-check-circle mr-2"></i>
+        <span id="messageText"></span>
+    </div>
+</div>
+
+<script>
+    // 密码显示/隐藏切换
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    togglePassword.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        togglePassword.innerHTML = type === 'password' ?
+            '<i class="fa fa-eye-slash"></i>' :
+            '<i class="fa fa-eye"></i>';
+    });
+
+    // 角色选择样式切换
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    roleRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            roleRadios.forEach(r => {
+                const icon = r.parentElement.querySelector('i');
+                if (r.checked) {
+                    icon.classList.remove('text-gray-400');
+                    icon.classList.add('text-primary');
+                } else {
+                    icon.classList.remove('text-primary');
+                    icon.classList.add('text-gray-400');
+                }
+            });
+        });
+    });
+
+    // 显示消息提示
+    function showMessage(text, isSuccess = true) {
+        const toast = document.getElementById('messageToast');
+        const icon = document.getElementById('messageIcon');
+        const textEl = document.getElementById('messageText');
+
+        textEl.textContent = text;
+        icon.className = isSuccess ? 'fa fa-check-circle mr-2' : 'fa fa-exclamation-circle mr-2';
+        toast.className = `fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg flex items-center opacity-100 transition-opacity duration-300 ${
+            isSuccess ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+        }`;
+
+        setTimeout(() => {
+            toast.classList.replace('opacity-100', 'opacity-0');
+        }, 3000);
+    }
+
+    // 表单验证（前端本地校验）
+    function validateForm(username, password) {
+        let isValid = true;
+        const usernameError = document.getElementById('usernameError');
+        const passwordError = document.getElementById('passwordError');
+
+        // 用户名验证
+        if (username.length < 3) {
+            usernameError.classList.remove('hidden');
+            document.getElementById('username').classList.add('input-error');
+            isValid = false;
+        } else {
+            usernameError.classList.add('hidden');
+            document.getElementById('username').classList.remove('input-error');
+        }
+
+        // 密码验证
+        if (password.length < 6) {
+            passwordError.classList.remove('hidden');
+            document.getElementById('password').classList.add('input-error');
+            isValid = false;
+        } else {
+            passwordError.classList.add('hidden');
+            document.getElementById('password').classList.remove('input-error');
+        }
+
+        return isValid;
+    }
+
+    // 输入框实时校验（失去焦点时）
+    document.getElementById('username').addEventListener('blur', (e) => {
+        const username = e.target.value.trim();
+        const errorEl = document.getElementById('usernameError');
+        if (username.length < 3) {
+            errorEl.classList.remove('hidden');
+            e.target.classList.add('input-error');
+        } else {
+            errorEl.classList.add('hidden');
+            e.target.classList.remove('input-error');
+        }
+    });
+
+    document.getElementById('password').addEventListener('blur', (e) => {
+        const password = e.target.value;
+        const errorEl = document.getElementById('passwordError');
+        if (password.length < 6) {
+            errorEl.classList.remove('hidden');
+            e.target.classList.add('input-error');
+        } else {
+            errorEl.classList.add('hidden');
+            e.target.classList.remove('input-error');
+        }
+    });
+
+    // 注册表单提交（对接后端接口）
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const role = parseInt(document.querySelector('input[name="role"]:checked').value);
+
+        // 先做前端本地验证
+        if (!validateForm(username, password)) {
+            return;
+        }
+
+        showMessage('正在注册...');
+
+        try {
+            // 对接后端注册接口（与后端 @PostMapping("/web/sign") 对应）
+            const baseUrl = 'http://localhost:8080';
+            const registerApi = '/web/sign';
+
+            const response = await axios.post(`${baseUrl}${registerApi}`, {
+                username: username,
+                password: password,
+                role: role
+            }, {
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const signResponse = response.data;
+            if (signResponse.success) {
+                showMessage('注册成功，跳转登录页...');
+                setTimeout(() => window.location.href = 'login.html', 1500);
+            } else {
+                // 显示后端返回的具体错误信息（如“用户已存在”）
+                showMessage(signResponse.message || '注册失败', false);
+            }
+        } catch (error) {
+            console.error('注册请求错误详情：', error);
+            if (error.response) {
+                // 后端返回错误（如 400/500）
+                showMessage(`注册失败：${error.response.data.message || '服务器异常'}`, false);
+            } else if (error.request) {
+                // 网络错误（后端未启动或地址错误）
+                showMessage('无法连接到服务器，请检查后端是否启动', false);
+            } else {
+                // 其他错误
+                showMessage('请求出错：' + error.message, false);
+            }
+        }
+    });
+</script>
+</body>
+</html>

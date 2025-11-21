@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录成功 - 奶茶店自助点餐系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        neutral: '#F7FFF7',
+                        dark: '#292F36',
+                        customer: '#4ECDC4', // 客户主题色
+                        merchant: '#FFA07A'  // 商家主题色
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .btn-hover {
+                @apply hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen flex flex-col items-center justify-center p-4">
+<div class="w-full max-w-md">
+    <!-- 顶部成功提示 -->
+    <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa fa-check text-4xl text-primary"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-dark mb-2">登录成功</h1>
+        <!-- 显示当前登录用户信息 -->
+        <p class="text-gray-600" id="userInfo">正在加载用户信息...</p>
+    </div>
+
+    <!-- 角色差异化功能区 -->
+    <div id="functionArea" class="card-shadow rounded-lg overflow-hidden bg-white mb-8">
+        <!-- 客户功能区（默认隐藏，根据角色显示） -->
+        <div id="customerFunction" class="hidden p-6">
+            <h2 class="text-lg font-semibold text-customer mb-4 flex items-center">
+                <i class="fa fa-user-circle mr-2"></i>客户功能中心
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="customer-order.html" class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-lg btn-hover bg-customer/5">
+                    <i class="fa fa-shopping-cart text-2xl text-customer mb-2"></i>
+                    <span class="text-sm text-gray-700">立即点餐</span>
+                </a>
+                <a href="customer-order-history.html" class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-lg btn-hover bg-customer/5">
+                    <i class="fa fa-history text-2xl text-customer mb-2"></i>
+                    <span class="text-sm text-gray-700">订单记录</span>
+                </a>
+                <a href="customer-profile.html" class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-lg btn-hover bg-customer/5">
+                    <i class="fa fa-id-card text-2xl text-customer mb-2"></i>
+                    <span class="text-sm text-gray-700">个人中心</span>
+                </a>
+                <a href="customer-favorites.html" class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-lg btn-hover bg-customer/5">
+                    <i class="fa fa-heart text-2xl text-customer mb-2"></i>
+                    <span class="text-sm text-gray-700">我的收藏</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 商家功能区（默认隐藏，根据角色显示） -->
+        <div id="merchantFunction" class="hidden p-6">
+            <h2 class="text-lg font-semibold text-merchant mb-4 flex items-center">
+                <i class="fa fa-briefcase mr-2"></i>商家管理中心
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <a href="merchant-menu.html" class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-lg btn-hover bg-merchant/5">
+                    <i class="fa fa-list-alt text-2xl text-merchant mb-2"></i>
+                    <span class="text-sm text-gray-700">菜单管理</span>
+                </a>
+                <a href="merchant-orders.html" class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-lg btn-hover bg-merchant/5">
+                    <i class="fa fa-receipt text-2xl text-merchant mb-2"></i>
+                    <span class="text-sm text-gray-700">订单管理</span>
+                </a>
+                <a href="merchant-statistics.html" class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-lg btn-hover bg-merchant/5">
+                    <i class="fa fa-bar-chart text-2xl text-merchant mb-2"></i>
+                    <span class="text-sm text-gray-700">销售统计</span>
+                </a>
+                <a href="merchant-settings.html" class="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-lg btn-hover bg-merchant/5">
+                    <i class="fa fa-cog text-2xl text-merchant mb-2"></i>
+                    <span class="text-sm text-gray-700">店铺设置</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 未获取角色时的提示 -->
+        <div id="defaultFunction" class="p-8 text-center">
+            <i class="fa fa-exclamation-circle text-3xl text-gray-300 mb-4"></i>
+            <p class="text-gray-400">未识别用户角色，请重新登录</p>
+        </div>
+    </div>
+
+    <!-- 操作按钮组 -->
+    <div class="flex justify-between items-center">
+        <a href="login.html" class="text-gray-600 hover:text-primary font-medium flex items-center">
+            <i class="fa fa-arrow-left mr-1"></i> 返回登录页
+        </a>
+        <button id="logoutBtn" class="bg-gray-100 hover:bg-gray-200 text-dark font-medium py-2 px-4 rounded-lg btn-hover flex items-center">
+            <i class="fa fa-sign-out mr-1"></i> 退出登录
+        </button>
+    </div>
+</div>
+
+<script>
+    // 页面加载时初始化
+    window.onload = () => {
+        initUserInfo();
+        bindLogoutEvent();
+    };
+
+    // 初始化用户信息并显示对应功能区
+    function initUserInfo() {
+        const userInfoEl = document.getElementById('userInfo');
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        const customerFunc = document.getElementById('customerFunction');
+        const merchantFunc = document.getElementById('merchantFunction');
+        const defaultFunc = document.getElementById('defaultFunction');
+
+        if (currentUser && currentUser.username && currentUser.role !== undefined) {
+            // 显示用户信息（带角色标识）
+            const roleText = currentUser.role === 0 ? '客户' : '商家';
+            const roleColor = currentUser.role === 0 ? 'text-customer' : 'text-merchant';
+            userInfoEl.innerHTML = `欢迎回来，<span class="font-medium ${roleColor}">${currentUser.username}</span>（${roleText}）`;
+
+            // 根据角色显示对应功能区
+            defaultFunc.classList.add('hidden');
+            if (currentUser.role === 0) {
+                customerFunc.classList.remove('hidden');
+            } else {
+                merchantFunc.classList.remove('hidden');
+            }
+        } else {
+            // 未获取到用户信息（跳转登录页）
+            userInfoEl.textContent = '未获取到有效用户信息';
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        }
+    }
+
+    // 绑定退出登录事件
+    function bindLogoutEvent() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        logoutBtn.addEventListener('click', () => {
+            // 清除本地存储的用户信息
+            localStorage.removeItem('currentUser');
+            // 可扩展：调用后端退出接口（如清除Token）
+            // axios.post('http://localhost:8080/api/logout').then(() => {})
+
+            // 显示退出提示并跳转登录页
+            const userInfoEl = document.getElementById('userInfo');
+            userInfoEl.textContent = '正在退出登录...';
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1000);
+        });
+    }
+</script>
+</body>
+</html>
