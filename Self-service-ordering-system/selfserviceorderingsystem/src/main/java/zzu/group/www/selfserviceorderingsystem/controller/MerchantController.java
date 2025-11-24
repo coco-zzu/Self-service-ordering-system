@@ -8,6 +8,7 @@ import zzu.group.www.selfserviceorderingsystem.javabean.OrderItem;
 import zzu.group.www.selfserviceorderingsystem.javabean.Product;
 import zzu.group.www.selfserviceorderingsystem.service.OrderService;
 import zzu.group.www.selfserviceorderingsystem.service.ProductService;
+import zzu.group.www.selfserviceorderingsystem.service.NotificationService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +24,9 @@ public class MerchantController {
 
     @Autowired
     private OrderService orderService;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     // 获取所有商品
     @GetMapping("/products")
@@ -190,5 +194,50 @@ public class MerchantController {
             return ResponseEntity.status(500).body(response);
         }
     }
+    
+    // 删除订单
+    @DeleteMapping("/orders/{id}")
+    public ResponseEntity<Map<String, Object>> deleteOrder(@PathVariable Long id) {
+        try {
+            orderService.deleteOrder(id);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "订单删除成功");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "订单删除失败: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+    
+    // 提醒取餐
+    @PostMapping("/orders/{id}/notify-pickup")
+    public ResponseEntity<Map<String, Object>> notifyPickup(@PathVariable Long id) {
+        try {
+            // Get order to find user ID
+            Order order = orderService.getOrderById(id);
+            if (order != null) {
+                // Add notification for the user
+                String message = "您的订单 " + id + " 已准备好，请前往取餐！";
+                notificationService.addNotification(order.getUserId(), message);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "已通知用户取餐");
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "订单不存在");
+                return ResponseEntity.status(404).body(response);
+            }
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "提醒取餐失败: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 }
-

@@ -6,77 +6,288 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>商家管理平台</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6f42c1;
+            --secondary-color: #fd7e14;
+            --success-color: #20c997;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #212529;
+            --light-color: #f8f9fa;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, #6f42c1, #5a32a3);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            height: calc(100vh - 100px);
+            position: sticky;
+            top: 20px;
+        }
+        
+        .sidebar .list-group-item {
+            border: none;
+            background: transparent;
+            color: white;
+            font-weight: 500;
+            padding: 12px 20px;
+            margin: 5px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .list-group-item:hover, 
+        .sidebar .list-group-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            min-height: calc(100vh - 100px);
+        }
+        
+        .section-title {
+            color: var(--dark-color);
+            font-weight: 600;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a32a3;
+            border-color: #5a32a3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(111, 66, 193, 0.3);
+        }
+        
+        .table {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .table thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .badge {
+            font-weight: 500;
+            padding: 6px 10px;
+            border-radius: 20px;
+        }
+        
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-content {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #e1e5f2;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(111, 66, 193, 0.2);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                margin-bottom: 20px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="container-fluid">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">奶茶店管理系统</a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text">欢迎，商家</span>
-            </div>
-        </div>
-    </nav>
-
-    <div class="row mt-4">
-        <!-- 侧边栏 -->
-        <div class="col-md-2">
-            <div class="list-group">
-                <button class="list-group-item list-group-item-action active" onclick="showProducts()">
-                    商品管理
-                </button>
-                <button class="list-group-item list-group-item-action" onclick="showOrders()">
-                    订单管理
-                </button>
-            </div>
-        </div>
-
-        <!-- 主内容区域 -->
-        <div class="col-md-10">
-            <!-- 商品管理区域 -->
-            <div id="product-section">
-                <div class="d-flex justify-content-between mb-3">
-                    <h3>商品管理</h3>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                        添加商品
-                    </button>
+    <!-- Toast for notifications -->
+    <div id="toast" class="toast" role="alert">
+        <div class="toast-body text-white"></div>
+    </div>
+    
+    <!-- Loading spinner -->
+    <div id="loading-spinner" class="loading-spinner"></div>
+    
+    <div class="container-fluid py-4">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary rounded shadow-sm mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" href="#">
+                    <i class="bi bi-shop me-2"></i>奶茶店管理系统
+                </a>
+                <div class="navbar-nav ms-auto">
+                    <span class="navbar-text d-flex align-items-center">
+                        <i class="bi bi-person-circle me-2"></i>欢迎，商家
+                    </span>
                 </div>
+            </div>
+        </nav>
 
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>名称</th>
-                        <th>描述</th>
-                        <th>价格</th>
-                        <th>状态</th>
-                        <th>操作</th>
-                    </tr>
-                    </thead>
-                    <tbody id="product-table-body">
-                    <!-- 商品数据将通过JS动态填充 -->
-                    </tbody>
-                </table>
+        <div class="row g-4">
+            <!-- 侧边栏 -->
+            <div class="col-lg-2">
+                <div class="sidebar">
+                    <div class="list-group">
+                        <button class="list-group-item list-group-item-action active" onclick="showProducts()">
+                            <i class="bi bi-box-seam me-2"></i>商品管理
+                        </button>
+                        <button class="list-group-item list-group-item-action" onclick="showOrders()">
+                            <i class="bi bi-clipboard-check me-2"></i>订单管理
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- 订单管理区域 -->
-            <div id="order-section" style="display: none;">
-                <h3>订单管理</h3>
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>订单ID</th>
-                        <th>用户ID</th>
-                        <th>总金额</th>
-                        <th>状态</th>
-                        <th>创建时间</th>
-                        <th>操作</th>
-                    </tr>
-                    </thead>
-                    <tbody id="order-table-body">
-                    <!-- 订单数据将通过JS动态填充 -->
-                    </tbody>
-                </table>
+            <!-- 主内容区域 -->
+            <div class="col-lg-10">
+                <div class="main-content fade-in">
+                    <!-- 商品管理区域 -->
+                    <div id="product-section">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="section-title mb-0">
+                                <i class="bi bi-box-seam me-2"></i>商品管理
+                            </h3>
+                            <button class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="bi bi-plus-circle me-1"></i> 添加商品
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>名称</th>
+                                    <th>描述</th>
+                                    <th>价格</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody id="product-table-body">
+                                <!-- 商品数据将通过JS动态填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 订单管理区域 -->
+                    <div id="order-section" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="section-title mb-0">
+                                <i class="bi bi-clipboard-check me-2"></i>订单管理
+                            </h3>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th>订单ID</th>
+                                    <th>用户ID</th>
+                                    <th>总金额</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody id="order-table-body">
+                                <!-- 订单数据将通过JS动态填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -84,31 +295,46 @@
 
 <!-- 添加商品模态框 -->
 <div class="modal fade" id="addProductModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">添加商品</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>添加商品
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="add-product-form">
                     <div class="mb-3">
                         <label for="productName" class="form-label">商品名称</label>
-                        <input type="text" class="form-control" id="productName" required>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                            <input type="text" class="form-control" id="productName" required placeholder="请输入商品名称">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="productDescription" class="form-label">描述</label>
-                        <textarea class="form-control" id="productDescription" rows="3"></textarea>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                            <textarea class="form-control" id="productDescription" rows="3" placeholder="请输入商品描述"></textarea>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="productPrice" class="form-label">价格</label>
-                        <input type="number" class="form-control" id="productPrice" step="0.01" required>
+                        <div class="input-group">
+                            <span class="input-group-text">¥</span>
+                            <input type="number" class="form-control" id="productPrice" step="0.01" min="0" required placeholder="请输入价格">
+                        </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" onclick="addProduct()">保存</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>取消
+                </button>
+                <button type="button" class="btn btn-primary" onclick="addProduct()">
+                    <i class="bi bi-check-circle me-1"></i>保存
+                </button>
             </div>
         </div>
     </div>
@@ -116,32 +342,47 @@
 
 <!-- 编辑商品模态框 -->
 <div class="modal fade" id="editProductModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">编辑商品</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>编辑商品
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="edit-product-form">
                     <input type="hidden" id="editProductId">
                     <div class="mb-3">
                         <label for="editProductName" class="form-label">商品名称</label>
-                        <input type="text" class="form-control" id="editProductName" required>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                            <input type="text" class="form-control" id="editProductName" required placeholder="请输入商品名称">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="editProductDescription" class="form-label">描述</label>
-                        <textarea class="form-control" id="editProductDescription" rows="3"></textarea>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                            <textarea class="form-control" id="editProductDescription" rows="3" placeholder="请输入商品描述"></textarea>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="editProductPrice" class="form-label">价格</label>
-                        <input type="number" class="form-control" id="editProductPrice" step="0.01" required>
+                        <div class="input-group">
+                            <span class="input-group-text">¥</span>
+                            <input type="number" class="form-control" id="editProductPrice" step="0.01" min="0" required placeholder="请输入价格">
+                        </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" onclick="updateProduct()">保存</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>取消
+                </button>
+                <button type="button" class="btn btn-primary" onclick="updateProduct()">
+                    <i class="bi bi-check-circle me-1"></i>保存
+                </button>
             </div>
         </div>
     </div>
@@ -151,13 +392,22 @@
 <script>
     // 页面加载完成后获取商品数据
     document.addEventListener('DOMContentLoaded', function() {
-        loadProducts();
+        showProducts(); // 默认显示商品管理页面
+        showToast('欢迎使用商家管理系统！', 'success');
     });
 
     // 显示商品管理页面
     function showProducts() {
         document.getElementById('product-section').style.display = 'block';
         document.getElementById('order-section').style.display = 'none';
+        
+        // 更新侧边栏激活状态
+        document.querySelectorAll('.sidebar .list-group-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        event.target ? event.target.classList.add('active') : 
+            document.querySelector('.sidebar .list-group-item').classList.add('active');
+        
         loadProducts();
     }
 
@@ -165,7 +415,55 @@
     function showOrders() {
         document.getElementById('product-section').style.display = 'none';
         document.getElementById('order-section').style.display = 'block';
+        
+        // 更新侧边栏激活状态
+        document.querySelectorAll('.sidebar .list-group-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
         loadOrders();
+    }
+
+    // 显示加载动画
+    function showLoading() {
+        document.getElementById('loading-spinner').style.display = 'block';
+    }
+
+    // 隐藏加载动画
+    function hideLoading() {
+        document.getElementById('loading-spinner').style.display = 'none';
+    }
+
+    // 显示提示消息
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        const toastBody = toast.querySelector('.toast-body');
+        
+        // 设置消息内容和样式
+        toastBody.textContent = message;
+        
+        // 根据类型设置背景色
+        toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-primary');
+        switch(type) {
+            case 'success':
+                toast.classList.add('bg-success');
+                break;
+            case 'error':
+                toast.classList.add('bg-danger');
+                break;
+            case 'warning':
+                toast.classList.add('bg-warning');
+                break;
+            default:
+                toast.classList.add('bg-primary');
+        }
+        
+        // 显示并自动隐藏
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
     }
 
     // 加载商品数据
@@ -226,17 +524,17 @@
             .then(response => response.json())
             .then(response => {
                 if (response.success) {
-                    alert(response.message);
+                    showToast(response.message, 'success');
                     document.getElementById('add-product-form').reset();
                     bootstrap.Modal.getInstance(document.getElementById('addProductModal')).hide();
                     loadProducts();
                 } else {
-                    alert('添加失败: ' + (response.message || '未知错误'));
+                    showToast('添加失败: ' + (response.message || '未知错误'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error adding product:', error);
-                alert('添加商品时发生错误: ' + error.message);
+                showToast('添加商品时发生错误: ' + error.message, 'error');
             });
     }
 
@@ -255,12 +553,12 @@
                     const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
                     modal.show();
                 } else {
-                    alert('获取商品信息失败: ' + (response.message || '未知错误'));
+                    showToast('获取商品信息失败: ' + (response.message || '未知错误'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error fetching product:', error);
-                alert('获取商品信息时发生错误: ' + error.message);
+                showToast('获取商品信息时发生错误: ' + error.message, 'error');
             });
     }
 
@@ -283,16 +581,16 @@
             .then(response => response.json())
             .then(response => {
                 if (response.success) {
-                    alert(response.message);
+                    showToast(response.message, 'success');
                     bootstrap.Modal.getInstance(document.getElementById('editProductModal')).hide();
                     loadProducts();
                 } else {
-                    alert('更新失败: ' + (response.message || '未知错误'));
+                    showToast('更新失败: ' + (response.message || '未知错误'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error updating product:', error);
-                alert('更新商品时发生错误: ' + error.message);
+                showToast('更新商品时发生错误: ' + error.message, 'error');
             });
     }
 
@@ -304,15 +602,15 @@
             .then(response => response.json())
             .then(response => {
                 if (response.success) {
-                    alert(response.message);
+                    showToast(response.message, 'success');
                     loadProducts();
                 } else {
-                    alert('状态更新失败: ' + (response.message || '未知错误'));
+                    showToast('状态更新失败: ' + (response.message || '未知错误'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error updating product status:', error);
-                alert('更新商品状态时发生错误: ' + error.message);
+                showToast('更新商品状态时发生错误: ' + error.message, 'error');
             });
     }
 
@@ -325,33 +623,40 @@
                 .then(response => response.json())
                 .then(response => {
                     if (response.success) {
-                        alert(response.message);
+                        showToast(response.message, 'success');
                         loadProducts();
                     } else {
-                        alert('删除失败: ' + (response.message || '未知错误'));
+                        showToast('删除失败: ' + (response.message || '未知错误'), 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error deleting product:', error);
-                    alert('删除商品时发生错误: ' + error.message);
+                    showToast('删除商品时发生错误: ' + error.message, 'error');
                 });
         }
     }
 
     // 加载订单数据
     function loadOrders() {
+        showLoading();
         fetch('/api/merchant/orders')
             .then(response => response.json())
             .then(response => {
+                hideLoading();
                 if (!response.success) {
                     console.error('Error loading orders:', response.message);
-                    alert('加载订单失败: ' + (response.message || '未知错误'));
+                    showToast('加载订单失败: ' + (response.message || '未知错误'), 'error');
                     return;
                 }
                 
                 const data = response.data;
                 const tbody = document.getElementById('order-table-body');
                 tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">暂无订单数据</td></tr>';
+                    return;
+                }
 
                 data.forEach(order => {
                     let statusText = '';
@@ -377,20 +682,34 @@
                     }
 
                     const row = `
-                            <tr>
+                            <tr class="fade-in">
                                 <td>${order.id}</td>
                                 <td>${order.userId}</td>
                                 <td>¥${order.totalAmount.toFixed(2)}</td>
                                 <td><span class="badge ${statusClass}">${statusText}</span></td>
                                 <td>${new Date(order.createTime).toLocaleString()}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails(${order.id})">详情</button>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewOrderDetails(${order.id})">
+                                        <i class="bi bi-eye"></i> 详情
+                                    </button>
                                     ${order.status === 0 ?
-                        `<button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus(${order.id}, 1)">设为已支付</button>
-                                         <button class="btn btn-sm btn-outline-danger" onclick="updateOrderStatus(${order.id}, 2)">取消订单</button>` :
+                        `<button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus(${order.id}, 1)">
+                                             <i class="bi bi-currency-dollar"></i> 设为已支付
+                                         </button>
+                                         <button class="btn btn-sm btn-outline-danger" onclick="updateOrderStatus(${order.id}, 2)">
+                                             <i class="bi bi-x-circle"></i> 取消订单
+                                         </button>` :
                         (order.status === 1 ? 
-                            `<button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus(${order.id}, 2)">设为已完成</button>` :
+                            `<button class="btn btn-sm btn-outline-warning" onclick="notifyPickup(${order.id})">
+                                 <i class="bi bi-bell"></i> 提醒取餐
+                             </button>
+                             <button class="btn btn-sm btn-outline-success" onclick="updateOrderStatus(${order.id}, 2)">
+                                 <i class="bi bi-check-circle"></i> 设为已完成
+                             </button>` :
                             '')}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder(${order.id})">
+                                        <i class="bi bi-trash"></i> 删除
+                                    </button>
                                 </td>
                             </tr>
                         `;
@@ -398,8 +717,9 @@
                 });
             })
             .catch(error => {
+                hideLoading();
                 console.error('Error loading orders:', error);
-                alert('加载订单时发生错误: ' + error.message);
+                showToast('加载订单时发生错误: ' + error.message, 'error');
             });
     }
 
@@ -428,15 +748,15 @@
             .then(response => response.json())
             .then(response => {
                 if (response.success) {
-                    alert(response.message);
+                    showToast(response.message, 'success');
                     loadOrders();
                 } else {
-                    alert('状态更新失败: ' + (response.message || '未知错误'));
+                    showToast('状态更新失败: ' + (response.message || '未知错误'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error updating order status:', error);
-                alert('更新订单状态时发生错误: ' + error.message);
+                showToast('更新订单状态时发生错误: ' + error.message, 'error');
             });
     }
 
@@ -445,22 +765,44 @@
         getOrderDetails(id);
     }
 
-    // 获取订单详情
-    function getOrderDetails(id) {
-        fetch(`/api/merchant/orders/${id}`)
+    // 删除订单
+    function deleteOrder(id) {
+        if (confirm('确定要删除这个订单吗？')) {
+            fetch(`/api/merchant/orders/${id}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(response => {
+                    if (response.success) {
+                        showToast(response.message, 'success');
+                        loadOrders();
+                    } else {
+                        showToast('删除失败: ' + (response.message || '未知错误'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting order:', error);
+                    showToast('删除订单时发生错误: ' + error.message, 'error');
+                });
+        }
+    }
+
+    // 提醒取餐
+    function notifyPickup(id) {
+        fetch(`/api/merchant/orders/${id}/notify-pickup`, {
+            method: 'POST'
+        })
             .then(response => response.json())
             .then(response => {
                 if (response.success) {
-                    const orderData = response.data;
-                    // 这里可以处理订单详情数据
-                    alert(`订单 ${id} 的详情已获取`);
+                    showToast(response.message, 'success');
                 } else {
-                    alert('获取订单详情失败: ' + (response.message || '未知错误'));
+                    showToast('提醒失败: ' + (response.message || '未知错误'), 'error');
                 }
             })
             .catch(error => {
-                console.error('Error fetching order details:', error);
-                alert('获取订单详情时发生错误: ' + error.message);
+                console.error('Error notifying pickup:', error);
+                showToast('提醒取餐时发生错误: ' + error.message, 'error');
             });
     }
 </script>
