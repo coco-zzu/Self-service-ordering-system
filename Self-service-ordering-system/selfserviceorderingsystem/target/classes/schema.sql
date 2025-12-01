@@ -48,5 +48,5 @@ INSERT INTO products (name, description, price, status) VALUES
 ('绿茶', '清香绿茶，回味甘甜', 8.00, 1),
 ('咖啡', '浓郁咖啡，提神醒脑', 15.00, 1);
 
--- Try to add points column if it doesn't exist (commented out because it may not work in all MySQL versions)
--- ALTER TABLE customer ADD COLUMN IF NOT EXISTS points INT DEFAULT 0;
+-- Try to add points column if it doesn't exist (for environments where this might be needed)
+ALTER TABLE customer ADD COLUMN IF NOT EXISTS points INT DEFAULT 0;

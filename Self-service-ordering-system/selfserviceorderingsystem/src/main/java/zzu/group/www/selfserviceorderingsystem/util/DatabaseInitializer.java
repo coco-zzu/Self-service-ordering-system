@@ -19,6 +19,7 @@ public class DatabaseInitializer {
             addPointsColumnIfNotExists();
         } catch (Exception e) {
             System.err.println("Failed to initialize database: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -30,10 +31,20 @@ public class DatabaseInitializer {
         } catch (Exception e) {
             // Column doesn't exist, try to add it
             try {
-                jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN points INT DEFAULT 0");
-                System.out.println("Successfully added points column to customer table");
+                // Use a safer approach to add the column
+                // First try with IF NOT EXISTS (for newer MySQL versions)
+                try {
+                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN IF NOT EXISTS points INT DEFAULT 0");
+                    System.out.println("Successfully added points column to customer table (using IF NOT EXISTS)");
+                } catch (Exception ex) {
+                    // Fall back to basic ALTER TABLE for older MySQL versions
+                    jdbcTemplate.execute("ALTER TABLE customer ADD COLUMN points INT DEFAULT 0");
+                    System.out.println("Successfully added points column to customer table (using basic ALTER TABLE)");
+                }
             } catch (Exception ex) {
                 System.err.println("Failed to add points column: " + ex.getMessage());
+                // Log the full stack trace for debugging
+                ex.printStackTrace();
             }
         }
     }
